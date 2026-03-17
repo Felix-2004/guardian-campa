@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Guardian Companion API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User profile operations
+  - name: contacts
+    description: Emergency contacts
+  - name: locations
+    description: Safe locations
+  - name: alerts
+    description: SOS alerts
+  - name: tracking
+    description: Live tracking
+  - name: safety
+    description: Safety score and recommendations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,7 +36,425 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/request-otp:
+    post:
+      operationId: requestOtp
+      tags: [auth]
+      summary: Request OTP for phone login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpRequest"
+      responses:
+        "200":
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpResponse"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/verify-otp:
+    post:
+      operationId: verifyOtp
+      tags: [auth]
+      summary: Verify OTP and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerify"
+      responses:
+        "200":
+          description: Verified, returns token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+    put:
+      operationId: updateMe
+      tags: [users]
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfile"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/setup:
+    post:
+      operationId: completeSetup
+      tags: [users]
+      summary: Complete first-time onboarding setup
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupData"
+      responses:
+        "200":
+          description: Setup complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /contacts:
+    get:
+      operationId: getContacts
+      tags: [contacts]
+      summary: Get all emergency contacts
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      tags: [contacts]
+      summary: Add emergency contact
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContact"
+      responses:
+        "201":
+          description: Contact created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+
+  /contacts/{contactId}:
+    put:
+      operationId: updateContact
+      tags: [contacts]
+      summary: Update emergency contact
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContact"
+      responses:
+        "200":
+          description: Updated contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+    delete:
+      operationId: deleteContact
+      tags: [contacts]
+      summary: Delete emergency contact
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /locations:
+    get:
+      operationId: getLocations
+      tags: [locations]
+      summary: Get all saved safe locations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SafeLocation"
+    post:
+      operationId: createLocation
+      tags: [locations]
+      summary: Add safe location
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLocation"
+      responses:
+        "201":
+          description: Location created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafeLocation"
+
+  /locations/{locationId}:
+    delete:
+      operationId: deleteLocation
+      tags: [locations]
+      summary: Delete safe location
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: locationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /alerts:
+    get:
+      operationId: getAlerts
+      tags: [alerts]
+      summary: Get alert history
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+    post:
+      operationId: triggerSos
+      tags: [alerts]
+      summary: Trigger SOS alert
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SosRequest"
+      responses:
+        "201":
+          description: SOS triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosResponse"
+
+  /alerts/{alertId}/resolve:
+    post:
+      operationId: resolveAlert
+      tags: [alerts]
+      summary: Resolve/close an alert
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Alert resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /tracking/{sessionId}:
+    get:
+      operationId: getTrackingSession
+      tags: [tracking]
+      summary: Get live tracking session (public)
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tracking session data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSession"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tracking/{sessionId}/update:
+    post:
+      operationId: updateTrackingLocation
+      tags: [tracking]
+      summary: Update current location in tracking session
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationUpdate"
+      responses:
+        "200":
+          description: Location updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /safety/score:
+    get:
+      operationId: getSafetyScore
+      tags: [safety]
+      summary: Get user safety score
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Safety score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafetyScore"
+
+  /safety/recommendations:
+    get:
+      operationId: getRecommendations
+      tags: [safety]
+      summary: Get personalized safety recommendations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recommendation"
+
+  /family/dashboard:
+    get:
+      operationId: getFamilyDashboard
+      tags: [users]
+      summary: Get family dashboard data (for authorized contacts)
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Family dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyDashboard"
+        "403":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +464,457 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    OtpRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+      required:
+        - phone
+
+    OtpResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        expiresIn:
+          type: integer
+      required:
+        - success
+        - message
+        - expiresIn
+
+    OtpVerify:
+      type: object
+      properties:
+        phone:
+          type: string
+        otp:
+          type: string
+      required:
+        - phone
+        - otp
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserProfile"
+      required:
+        - token
+        - user
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        phone:
+          type: string
+        name:
+          type: string
+          nullable: true
+        age:
+          type: integer
+          nullable: true
+        gender:
+          type: string
+          nullable: true
+        healthConcerns:
+          type: string
+          nullable: true
+        issues:
+          type: array
+          items:
+            type: string
+        profileCompleted:
+          type: boolean
+        homeLat:
+          type: number
+          nullable: true
+        homeLng:
+          type: number
+          nullable: true
+        preferences:
+          $ref: "#/components/schemas/UserPreferences"
+        familyToken:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - phone
+        - profileCompleted
+        - issues
+        - createdAt
+
+    UserPreferences:
+      type: object
+      properties:
+        routineReminders:
+          type: boolean
+        safetyCheckIns:
+          type: boolean
+        emergencyAlerts:
+          type: boolean
+        sosDelay:
+          type: integer
+      required:
+        - routineReminders
+        - safetyCheckIns
+        - emergencyAlerts
+        - sosDelay
+
+    UpdateUserProfile:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        healthConcerns:
+          type: string
+        preferences:
+          $ref: "#/components/schemas/UserPreferences"
+
+    SetupData:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        healthConcerns:
+          type: string
+        issues:
+          type: array
+          items:
+            type: string
+        homeLat:
+          type: number
+        homeLng:
+          type: number
+        preferences:
+          $ref: "#/components/schemas/UserPreferences"
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreateContact"
+      required:
+        - name
+
+    Contact:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        relationship:
+          type: string
+        priority:
+          type: string
+          enum: [primary, secondary]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - name
+        - phone
+        - relationship
+        - priority
+        - createdAt
+
+    CreateContact:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        relationship:
+          type: string
+        priority:
+          type: string
+          enum: [primary, secondary]
+      required:
+        - name
+        - phone
+        - relationship
+        - priority
+
+    SafeLocation:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        label:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        radius:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - label
+        - lat
+        - lng
+        - radius
+        - createdAt
+
+    CreateLocation:
+      type: object
+      properties:
+        label:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        radius:
+          type: integer
+      required:
+        - label
+        - lat
+        - lng
+        - radius
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        type:
+          type: string
+          enum: [sos, check_in, routine_violation]
+        status:
+          type: string
+          enum: [active, resolved]
+        lat:
+          type: number
+          nullable: true
+        lng:
+          type: number
+          nullable: true
+        trackingSessionId:
+          type: string
+          nullable: true
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - type
+        - status
+        - createdAt
+
+    SosRequest:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        message:
+          type: string
+      required:
+        - lat
+        - lng
+
+    SosResponse:
+      type: object
+      properties:
+        alert:
+          $ref: "#/components/schemas/Alert"
+        trackingUrl:
+          type: string
+        smsSent:
+          type: boolean
+        contactsNotified:
+          type: integer
+      required:
+        - alert
+        - trackingUrl
+        - smsSent
+        - contactsNotified
+
+    TrackingSession:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        userId:
+          type: integer
+        userName:
+          type: string
+          nullable: true
+        currentLat:
+          type: number
+          nullable: true
+        currentLng:
+          type: number
+          nullable: true
+        pathHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocationPoint"
+        status:
+          type: string
+          enum: [active, expired]
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - sessionId
+        - userId
+        - pathHistory
+        - status
+        - createdAt
+        - expiresAt
+
+    LocationPoint:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - lat
+        - lng
+        - timestamp
+
+    LocationUpdate:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+      required:
+        - lat
+        - lng
+
+    SafetyScore:
+      type: object
+      properties:
+        score:
+          type: integer
+        riskLevel:
+          type: string
+          enum: [low, medium, high]
+        factors:
+          type: array
+          items:
+            type: string
+        lastUpdated:
+          type: string
+          format: date-time
+      required:
+        - score
+        - riskLevel
+        - factors
+        - lastUpdated
+
+    Recommendation:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+      required:
+        - id
+        - category
+        - title
+        - description
+        - priority
+
+    FamilyDashboard:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        latestAlert:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Alert"
+        recentAlerts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"
+        isTracking:
+          type: boolean
+        trackingSessionId:
+          type: string
+          nullable: true
+      required:
+        - user
+        - recentAlerts
+        - isTracking

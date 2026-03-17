@@ -1,0 +1,20 @@
+packages:
+  "framer-motion": "For page transitions, SOS pulse, and press-and-hold animations"
+  "leaflet": "Core map library"
+  "react-leaflet": "React bindings for Leaflet maps"
+  "@types/leaflet": "Types for Leaflet"
+  "date-fns": "For formatting alert times and tracking session dates"
+  "react-hook-form": "For robust form state management"
+  "@hookform/resolvers": "For Zod validation integration"
+  "lucide-react": "For UI icons"
+  "clsx": "For conditional class merging"
+  "tailwind-merge": "For merging tailwind classes safely"
+
+images:
+  - path: "artifacts/guardian-companion/public/images/auth-bg.png"
+    description: "Abstract soft gradient mesh in deep navy and subtle crimson, conveying safety and modern technology"
+    aspect_ratio: "9:16"
+
+notes:
+  - Global window.fetch is patched to inject the localStorage token into /api requests
+  - Layout is restricted to mobile-app dimensions (max-w-md) to enforce the "Companion App" feel on desktop

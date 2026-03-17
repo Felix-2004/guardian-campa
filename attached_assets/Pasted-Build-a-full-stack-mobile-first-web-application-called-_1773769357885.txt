@@ -1,0 +1,579 @@
+Build a full-stack mobile-first web application called "Guardian Companion" — a personal safety and intelligent assistance system.
+
+The output must be a COMPLETE, RUNNABLE project inside Replit with clear file structure, working backend, and frontend integration.
+
+--------------------------------------------------
+🚀 PROJECT SETUP (IMPORTANT)
+--------------------------------------------------
+
+Use this exact stack:
+
+Frontend:
+- React (Vite)
+- Tailwind CSS
+- Framer Motion
+
+Backend:
+- Node.js + Express
+
+Database:
+- MongoDB (Mongoose)
+
+Other:
+- Leaflet (map)
+- Twilio (SMS for SOS)
+- Firebase (optional for real-time)
+
+Create TWO folders:
+- /client (React app)
+- /server (Express backend)
+
+Also include:
+- root package.json to run both concurrently
+
+--------------------------------------------------
+📁 REQUIRED FILE STRUCTURE
+--------------------------------------------------
+
+Root:
+- package.json
+- README.md
+- .env.example
+
+/client:
+- index.html
+- src/
+  - main.jsx
+  - App.jsx
+  - pages/
+  - components/
+  - services/ (API calls)
+  - hooks/
+
+/server:
+- server.js
+- config/db.js
+- routes/
+- controllers/
+- models/
+- middleware/
+- services/
+
+--------------------------------------------------
+🔐 AUTHENTICATION (MANDATORY)
+--------------------------------------------------
+
+Implement:
+
+1. Phone Number Login (PRIMARY)
+2. OTP Verification using Twilio
+
+Flow:
+- User enters phone number
+- Backend sends OTP via Twilio
+- User verifies OTP
+- Generate JWT (access token)
+
+Requirements:
+- Rate limit OTP (max 3 per 10 minutes per number)
+- Store OTP temporarily (in-memory or DB)
+- Session persistence
+- Protected routes middleware
+
+Optional:
+- Google OAuth login
+
+DO NOT implement email/password login.
+
+--------------------------------------------------
+👤 FIRST-TIME SETUP (ONBOARDING)
+--------------------------------------------------
+
+After first login ONLY.
+
+Create a page: /setup
+
+Collect:
+- Full Name
+- Age
+- Gender (optional)
+- Phone (auto-filled)
+- Health concerns (optional)
+
+Emergency Contacts:
+- Name
+- Phone
+- Relationship
+- Priority (Primary/Secondary)
+
+Location:
+- Enable location
+- Save Home Location (lat/lng)
+
+Preferences:
+- Routine reminders
+- Safety check-ins
+- Emergency alerts toggle
+
+Issues:
+- Night travel
+- Harassment
+- Health issues
+- Elderly safety
+- Child safety
+
+Logic:
+- Save in DB
+- profileCompleted = true
+- Redirect to dashboard
+- If already completed → skip setup
+
+--------------------------------------------------
+🏠 DASHBOARD (HOME TAB)
+--------------------------------------------------
+
+Show:
+- Safety status (Safe/Warning/Emergency)
+- Live map (Leaflet)
+- Emergency contacts summary
+- Activity logs
+- Recommendations
+
+Map features:
+- Real-time location
+- Show saved safe zones
+- Add new locations
+
+--------------------------------------------------
+🧭 NAVIGATION
+--------------------------------------------------
+
+Bottom navigation:
+- Home
+- Locations
+- Contacts
+- Alerts
+- Profile
+
+Center:
+- Large SOS button (floating in nav)
+
+Top bar (ALL pages):
+- Greeting: "Good Morning/Afternoon/Evening, {name}"
+- Settings icon (top right)
+- Back button when needed
+
+--------------------------------------------------
+🚨 SOS SYSTEM
+--------------------------------------------------
+
+Behavior:
+- Press & hold (3 seconds)
+
+On trigger:
+- Send SMS via Twilio to all contacts
+- Include live location link
+- Store alert in DB
+- Trigger vibration (frontend)
+
+Animation:
+- Smooth pulse (NOT flicker)
+
+--------------------------------------------------
+📞 CONTACTS MODULE
+--------------------------------------------------
+
+- Add/Edit/Delete contacts
+- Tag Primary / Secondary
+- Quick call button
+- Quick message button
+- Call history
+
+--------------------------------------------------
+🗺️ LOCATIONS MODULE
+--------------------------------------------------
+
+- Add safe locations
+- Map picker
+- Radius selection
+- Labels (Home, College, etc.)
+
+--------------------------------------------------
+🚨 ALERTS MODULE
+--------------------------------------------------
+
+- List alerts
+- Show time + location + status
+
+--------------------------------------------------
+👤 PROFILE / SETTINGS
+--------------------------------------------------
+
+- Edit name
+- Show phone
+- Avatar
+- Dark/light toggle
+- Accessibility toggle (large text)
+- Notification preferences
+- Emergency delay timer
+
+--------------------------------------------------
+🧠 RECOMMENDATION SYSTEM
+--------------------------------------------------
+
+Create a service:
+
+/server/services/recommendationService.js
+
+Implement:
+
+1. Rule-based:
+IF issue = night travel
+→ suggest:
+  - auto alerts after 10PM
+  - location sharing
+  - SOS template
+
+2. Dataset-based:
+Use JSON mapping issue → recommendations
+
+Return recommendations to dashboard
+
+--------------------------------------------------
+🔒 SECURITY
+--------------------------------------------------
+
+- Validate all inputs
+- Use JWT auth middleware
+- Store secrets in .env
+- Rate limit OTP API
+- Sanitize inputs
+
+--------------------------------------------------
+⚡ PERFORMANCE
+--------------------------------------------------
+
+- Fast tab navigation
+- No unnecessary re-renders
+- Optimize API calls
+
+--------------------------------------------------
+🎞️ ANIMATIONS
+--------------------------------------------------
+
+Use Framer Motion:
+- Page transitions
+- Smooth tab switching
+- SOS pulse animation (slow)
+
+--------------------------------------------------
+📲 PWA SUPPORT
+--------------------------------------------------
+
+- manifest.json
+- service worker
+- installable app
+
+--------------------------------------------------
+🧪 TESTING
+--------------------------------------------------
+
+Ensure:
+
+1. Phone login → OTP works
+2. Setup page appears once
+3. Dashboard loads correctly
+4. Navigation works across all tabs
+5. SOS sends SMS (mock if Twilio not configured)
+6. No flickering animations
+7. App runs with:
+
+npm install
+npm run dev
+
+--------------------------------------------------
+📦 OUTPUT REQUIREMENTS
+--------------------------------------------------
+
+- Full working code
+- README with setup steps
+- .env.example with:
+  - MONGO_URI
+  - JWT_SECRET
+  - TWILIO_SID
+  - TWILIO_TOKEN
+  - TWILIO_PHONE
+
+--------------------------------------------------
+🎯 FINAL GOAL
+--------------------------------------------------
+
+This must behave like a real-world safety system:
+- Reliable
+- Secure
+- Mobile-friendly
+- Clean UI
+- Logical architecture
+
+Do NOT generate placeholder-only UI.
+Generate a working backend + frontend integration.
+Extend the existing "Guardian Companion" application by ADDING the following advanced safety and intelligence features.
+
+IMPORTANT:
+- Do NOT refactor or redesign existing UI or architecture
+- Only extend functionality
+- Keep all existing routing, components, and flows intact
+- Ensure new features integrate cleanly
+
+--------------------------------------------------
+🎤 1. AUDIO + VIDEO EMERGENCY RECORDING
+--------------------------------------------------
+
+On SOS trigger:
+
+- Automatically start:
+  - Audio recording (mandatory)
+  - Video recording (optional, if camera permission granted)
+
+Frontend:
+- Use MediaRecorder API
+- Run in background during alert
+
+Backend:
+- Upload recordings to server or cloud storage
+- Store metadata:
+  - userId
+  - timestamp
+  - location
+
+Fail-safe:
+- If upload fails → store locally and retry
+
+--------------------------------------------------
+📡 2. LIVE TRACKING LINK (LIKE UBER)
+--------------------------------------------------
+
+Create secure tracking sessions:
+
+Route:
+GET /track/:sessionId
+
+Features:
+- Real-time location updates (WebSocket or polling)
+- Display on Leaflet map
+- Show:
+  - Current position
+  - Path history
+  - ETA (basic calculation)
+
+Backend:
+- Create tracking session on SOS
+- Expire session after:
+  - User marks safe OR
+  - Timeout (e.g., 2 hours)
+
+Security:
+- Use random, unguessable session IDs
+
+--------------------------------------------------
+📊 3. SAFETY SCORE (BEHAVIOR ANALYSIS)
+--------------------------------------------------
+
+Create a scoring system:
+
+Score range:
+0 - 100
+
+Factors:
+- Time of travel (night = higher risk)
+- Risk zones visited
+- Missed check-ins
+- Routine deviations
+
+Example logic:
+score = 100 - (risk_points)
+
+Return:
+- Score
+- Risk level (Low / Medium / High)
+- Suggestions
+
+Display in dashboard.
+
+--------------------------------------------------
+🗺️ 4. ROUTE SAFETY ANALYSIS
+--------------------------------------------------
+
+Add route analysis feature:
+
+Input:
+- Source + Destination
+
+Output:
+- Safer route vs faster route
+
+Logic:
+- Penalize:
+  - Night time
+  - Known unsafe zones
+- Score each route
+
+Frontend:
+- Show 2 route options on map
+
+--------------------------------------------------
+🕶️ 5. STEALTH MODE
+--------------------------------------------------
+
+Add hidden safety mode:
+
+Features:
+- App can appear as:
+  - Calculator UI OR Notes UI
+
+Hidden trigger:
+- Enter code (e.g., "999=")
+→ instantly trigger SOS
+
+Constraints:
+- Must not expose real UI
+- Maintain full functionality in background
+
+--------------------------------------------------
+📶 6. OFFLINE / LOW NETWORK MODE
+--------------------------------------------------
+
+Add resilience layer:
+
+If no internet:
+- Queue SOS events locally
+- Send SMS only via Twilio fallback
+
+Store:
+- Last known location
+- Pending alerts
+
+Auto-sync when network returns
+
+Frontend:
+- Show "Offline Mode Active" indicator
+
+--------------------------------------------------
+👨‍👩‍👧 7. FAMILY DASHBOARD (WEB PANEL)
+--------------------------------------------------
+
+Create separate web dashboard:
+
+Route:
+- /family-dashboard
+
+Features:
+- View user:
+  - Live location (if shared)
+  - Alerts
+  - Activity logs
+
+Access:
+- Only authorized contacts
+
+Security:
+- Token-based access
+
+--------------------------------------------------
+⏱️ 8. ROUTINE VIOLATION DETECTION
+--------------------------------------------------
+
+Track user routines:
+
+If:
+- Expected arrival time exceeded
+- No check-in
+
+Then:
+1. Send notification to user
+2. If no response → escalate
+
+--------------------------------------------------
+🤖 9. BASIC ML RISK PREDICTION
+--------------------------------------------------
+
+Create simple prediction model:
+
+Inputs:
+- Time of day
+- Location
+- Routine adherence
+- Past alerts
+
+Output:
+- Risk level: Low / Medium / High
+
+Implementation:
+- Simple scoring model OR
+- Lightweight ML (optional)
+
+Expose via:
+GET /risk/predict
+
+--------------------------------------------------
+📲 10. ALERT ESCALATION SYSTEM (CRITICAL)
+--------------------------------------------------
+
+Before triggering full emergency:
+
+Step 1:
+- Send in-app notification:
+  "Are you safe?"
+
+Step 2:
+- If no response → initiate call system
+
+Call logic:
+- Call user up to 3 times
+
+If still no response:
+- Call emergency contacts in priority order:
+  1. Primary contact
+  2. Secondary contacts
+
+Step 3:
+- Send SMS alerts with:
+  - Live location link
+  - Emergency message
+
+--------------------------------------------------
+🔔 NOTIFICATION SYSTEM
+--------------------------------------------------
+
+Use:
+- Push notifications OR in-app alerts
+
+Must support:
+- Safety checks
+- Routine alerts
+- SOS confirmations
+
+--------------------------------------------------
+🧪 TESTING REQUIREMENTS
+--------------------------------------------------
+
+Verify:
+
+- Recording starts on SOS
+- Tracking link works externally
+- Safety score updates correctly
+- Offline mode queues alerts
+- Stealth mode triggers SOS correctly
+- Routine violation triggers escalation
+- Call escalation works in correct order
+
+--------------------------------------------------
+🎯 FINAL GOAL
+--------------------------------------------------
+
+The system must behave like an intelligent safety network:
+
+- Prevent danger (prediction)
+- Detect anomalies (routine + behavior)
+- React fast (SOS + alerts)
+- Escalate reliably (calls + contacts)
