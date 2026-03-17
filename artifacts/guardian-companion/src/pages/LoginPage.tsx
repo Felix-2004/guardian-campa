@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Shield, Phone, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+
+declare const __GOOGLE_CLIENT_ID__: string;
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
@@ -12,7 +20,63 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!__GOOGLE_CLIENT_ID__) return;
+
+    const scriptId = "google-gsi-script";
+    if (document.getElementById(scriptId)) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.head.appendChild(script);
+
+    return () => {};
+  }, []);
+
+  function initGoogle() {
+    if (!window.google || !googleBtnRef.current) return;
+    window.google.accounts.id.initialize({
+      client_id: __GOOGLE_CLIENT_ID__,
+      callback: handleGoogleCredential,
+      auto_select: false,
+    });
+    window.google.accounts.id.renderButton(googleBtnRef.current, {
+      theme: "filled_blue",
+      size: "large",
+      shape: "pill",
+      width: googleBtnRef.current.offsetWidth || 320,
+      text: "signin_with",
+    });
+  }
+
+  async function handleGoogleCredential(response: { credential: string }) {
+    setGoogleLoading(true);
+    setError("");
+    try {
+      const result = await api.auth.googleSignIn(response.credential);
+      login(result.token, result.user);
+      if (!result.user.profileCompleted) {
+        navigate("/setup");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      setError(err.message || "Google sign-in failed");
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
 
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,37 +131,61 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white/10 backdrop-blur rounded-3xl p-6 border border-white/15">
+        <div className="bg-white/10 backdrop-blur rounded-3xl p-6 border border-white/15 space-y-5">
           {step === "phone" ? (
-            <form onSubmit={handleRequestOtp} className="space-y-5">
+            <>
               <div>
                 <h2 className="text-white font-bold text-xl mb-1">Sign in</h2>
-                <p className="text-white/50 text-sm">Enter your phone number to receive a code</p>
+                <p className="text-white/50 text-sm">Choose how you'd like to continue</p>
               </div>
-              <div>
-                <label className="block text-white/70 text-xs mb-2 font-medium">Phone Number</label>
-                <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 border border-white/20 focus-within:border-primary">
-                  <Phone className="w-4 h-4 text-white/50 flex-shrink-0" />
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    placeholder="+1 555 000 0000"
-                    className="bg-transparent text-white placeholder:text-white/30 text-sm flex-1 outline-none"
-                    autoComplete="tel"
-                    required
-                  />
+
+              {/* Google Sign-In */}
+              {__GOOGLE_CLIENT_ID__ && (
+                <div className="space-y-3">
+                  {googleLoading ? (
+                    <div className="w-full flex items-center justify-center py-3 gap-2 text-white/70 text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Signing in with Google...
+                    </div>
+                  ) : (
+                    <div ref={googleBtnRef} className="w-full flex justify-center" />
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-white/15" />
+                    <span className="text-white/40 text-xs font-medium">or use phone</span>
+                    <div className="flex-1 h-px bg-white/15" />
+                  </div>
                 </div>
-              </div>
-              {error && <p className="text-red-400 text-sm">{error}</p>}
-              <button
-                type="submit"
-                disabled={loading || !phone.trim()}
-                className="w-full bg-primary text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Send Code <ArrowRight className="w-4 h-4" /></>}
-              </button>
-            </form>
+              )}
+
+              {/* Phone form */}
+              <form onSubmit={handleRequestOtp} className="space-y-4">
+                <div>
+                  <label className="block text-white/70 text-xs mb-2 font-medium">Phone Number</label>
+                  <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 border border-white/20 focus-within:border-primary">
+                    <Phone className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="+1 555 000 0000"
+                      className="bg-transparent text-white placeholder:text-white/30 text-sm flex-1 outline-none"
+                      autoComplete="tel"
+                      required
+                    />
+                  </div>
+                </div>
+                {error && <p className="text-red-400 text-sm">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading || !phone.trim()}
+                  className="w-full bg-primary text-white rounded-xl py-3.5 font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Send Code <ArrowRight className="w-4 h-4" /></>}
+                </button>
+              </form>
+            </>
           ) : (
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <div>

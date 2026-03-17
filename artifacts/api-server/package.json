@@ -17,6 +17,7 @@
     "crypto": "^1.0.1",
     "drizzle-orm": "catalog:",
     "express": "^5",
+    "google-auth-library": "^10.6.2",
     "jsonwebtoken": "^9.0.3",
     "twilio": "^5.13.0",
     "uuid": "^13.0.0"

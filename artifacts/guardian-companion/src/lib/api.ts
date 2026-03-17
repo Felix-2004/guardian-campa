@@ -42,6 +42,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ phone, otp }),
       }),
+    googleSignIn: (credential: string) =>
+      request<{ token: string; user: any }>("/auth/google", {
+        method: "POST",
+        body: JSON.stringify({ credential }),
+      }),
   },
   users: {
     me: () => request<any>("/users/me"),

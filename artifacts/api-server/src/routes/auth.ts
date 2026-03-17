@@ -5,7 +5,10 @@ import { RequestOtpBody, VerifyOtpBody } from "@workspace/api-zod";
 import { canRequestOtp, createOtp, verifyOtp, getExpiresIn } from "../services/otpService.js";
 import { sendOtp } from "../services/smsService.js";
 import { generateToken } from "../middleware/auth.js";
+import { OAuth2Client } from "google-auth-library";
 import crypto from "crypto";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = Router();
 
@@ -71,6 +74,62 @@ router.post("/verify-otp", async (req, res) => {
       createdAt: user.createdAt.toISOString(),
     },
   });
+});
+
+router.post("/google", async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) {
+    res.status(400).json({ error: "missing_credential", message: "Google credential is required" });
+    return;
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      res.status(401).json({ error: "invalid_token", message: "Invalid Google token" });
+      return;
+    }
+
+    const { email, name, picture, sub: googleId } = payload;
+
+    let user = await db.select().from(usersTable).where(eq(usersTable.googleId, googleId)).then(r => r[0]);
+
+    if (!user) {
+      const [newUser] = await db.insert(usersTable).values({
+        email,
+        name: name || null,
+        googleId,
+        avatarUrl: picture || null,
+        familyToken: crypto.randomUUID(),
+        issues: [],
+        profileCompleted: false,
+        preferences: {
+          routineReminders: true,
+          safetyCheckIns: true,
+          emergencyAlerts: true,
+          sosDelay: 3,
+        },
+      }).returning();
+      user = newUser;
+    }
+
+    const token = generateToken(user.id);
+
+    res.json({
+      token,
+      user: {
+        ...user,
+        createdAt: user.createdAt.toISOString(),
+      },
+    });
+  } catch (err: any) {
+    console.error("Google auth error:", err);
+    res.status(401).json({ error: "google_auth_failed", message: "Google authentication failed" });
+  }
 });
 
 export default router;
