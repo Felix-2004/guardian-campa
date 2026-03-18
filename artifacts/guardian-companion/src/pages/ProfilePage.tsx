@@ -57,8 +57,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopBar title="Profile & Settings" />
+    <div className="flex flex-col h-screen bg-background">
+      <TopBar title="Profile & Settings" showBack backHref="/dashboard" />
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-[430px] mx-auto px-4 pt-4 pb-24">
         {/* Avatar */}
         <motion.div
@@ -185,6 +186,7 @@ export default function ProfilePage() {
         >
           Sign Out
         </button>
+      </div>
       </div>
       <BottomNav />
     </div>

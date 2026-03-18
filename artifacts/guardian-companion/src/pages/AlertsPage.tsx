@@ -38,8 +38,9 @@ export default function AlertsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopBar title="Alerts" />
+    <div className="flex flex-col h-screen bg-background">
+      <TopBar title="Alerts" showBack backHref="/dashboard" />
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-[430px] mx-auto px-4 pt-4 pb-24">
         {loading ? (
           <div className="space-y-3">
@@ -118,6 +119,7 @@ export default function AlertsPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
       <BottomNav />
     </div>

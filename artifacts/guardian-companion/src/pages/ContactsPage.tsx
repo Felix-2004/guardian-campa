@@ -62,8 +62,9 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopBar title="Emergency Contacts" />
+    <div className="flex flex-col h-screen bg-background">
+      <TopBar title="Emergency Contacts" showBack backHref="/dashboard" />
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-[430px] mx-auto px-4 pt-4 pb-24">
         <button
           onClick={openAdd}
@@ -172,6 +173,7 @@ export default function ContactsPage() {
         )}
       </AnimatePresence>
 
+      </div>
       <BottomNav />
     </div>
   );

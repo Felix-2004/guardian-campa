@@ -64,10 +64,11 @@ export default function DashboardPage() {
   const scoreColor = !safetyScore ? "#6b7280" : safetyScore.score >= 80 ? "#22c55e" : safetyScore.score >= 50 ? "#eab308" : "#ef4444";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background">
       <TopBar />
       <OfflineBanner />
 
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-[430px] mx-auto pb-24">
         {/* Safety Status + Score */}
         <div className="px-4 pt-4 grid grid-cols-2 gap-3">
@@ -237,6 +238,7 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
 
       <BottomNav />

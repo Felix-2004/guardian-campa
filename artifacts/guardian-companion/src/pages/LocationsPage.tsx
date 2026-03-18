@@ -74,8 +74,9 @@ export default function LocationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopBar title="Safe Locations" />
+    <div className="flex flex-col h-screen bg-background">
+      <TopBar title="Safe Locations" showBack backHref="/dashboard" />
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-[430px] mx-auto pb-24">
         {/* Map */}
         <div className="h-[240px] border-b border-border">
@@ -199,6 +200,7 @@ export default function LocationsPage() {
         )}
       </AnimatePresence>
 
+      </div>
       <BottomNav />
     </div>
   );
