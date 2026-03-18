@@ -148,52 +148,63 @@ export default function LocationsPage() {
           >
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowForm(false)} />
             <motion.div
-              className="relative bg-card rounded-t-3xl w-full max-w-[430px] pb-10"
+              className="relative bg-card rounded-t-3xl w-full max-w-[430px] flex flex-col"
+              style={{ maxHeight: "88vh" }}
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
             >
-              <div className="flex items-center justify-between px-6 pt-6 mb-4">
+              {/* Fixed header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-3 border-b border-border flex-shrink-0">
                 <h3 className="font-bold text-lg">Add Safe Location</h3>
                 <button onClick={() => setShowForm(false)}><X className="w-5 h-5" /></button>
               </div>
 
-              <p className="text-xs text-muted-foreground px-6 mb-2">Tap on the map to place your pin</p>
-              <div className="h-[200px] mx-6 rounded-2xl overflow-hidden border border-border mb-4">
-                <MapContainer center={defaultCenter} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <MapClickHandler onPick={(lat, lng) => setPickedPos([lat, lng])} />
-                  {pickedPos && <Marker position={pickedPos}><Popup>Selected location</Popup></Marker>}
-                </MapContainer>
-              </div>
-
-              <div className="px-6 space-y-3">
-                <input
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary"
-                  placeholder="Label (e.g. Home, School)"
-                  value={label}
-                  onChange={e => setLabel(e.target.value)}
-                />
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Radius: {radius}m</label>
-                  <input
-                    type="range"
-                    min={50}
-                    max={500}
-                    step={50}
-                    value={radius}
-                    onChange={e => setRadius(Number(e.target.value))}
-                    className="w-full accent-primary"
-                  />
+              {/* Scrollable body */}
+              <div className="overflow-y-auto flex-1 pb-6">
+                <p className="text-xs text-muted-foreground px-6 pt-4 pb-2">Tap on the map to place your pin</p>
+                <div className="h-[200px] mx-6 rounded-2xl overflow-hidden border border-border mb-4">
+                  <MapContainer center={defaultCenter} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapClickHandler onPick={(lat, lng) => setPickedPos([lat, lng])} />
+                    {pickedPos && <Marker position={pickedPos}><Popup>Selected location</Popup></Marker>}
+                  </MapContainer>
                 </div>
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !pickedPos || !label.trim()}
-                  className="w-full bg-primary text-white py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Location"}
-                </button>
+
+                <div className="px-6 space-y-4">
+                  <input
+                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-primary"
+                    placeholder="Label (e.g. Home, School)"
+                    value={label}
+                    onChange={e => setLabel(e.target.value)}
+                  />
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Radius: {radius}m</label>
+                    <input
+                      type="range"
+                      min={50}
+                      max={500}
+                      step={50}
+                      value={radius}
+                      onChange={e => setRadius(Number(e.target.value))}
+                      className="w-full accent-primary"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                      <span>50m</span><span>500m</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || !pickedPos || !label.trim()}
+                    className="w-full bg-primary text-white py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Location"}
+                  </button>
+                  {!pickedPos && (
+                    <p className="text-center text-xs text-muted-foreground">Tap on the map above to set the location pin</p>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>
